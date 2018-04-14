@@ -48,11 +48,9 @@ def make_request_using_cache(baseurl, params, headers = {}):
     unique_ident = params_unique_combination(baseurl,params)
 
     if unique_ident in CACHE_DICTION:
-        #print("Getting cached data...")
         return CACHE_DICTION[unique_ident]
 
     else:
-        #print("Making a request for new data...")
         resp = requests.get(baseurl, params, headers = headers)
         CACHE_DICTION[unique_ident] = json.loads(resp.text)
         dumped_json_cache = json.dumps(CACHE_DICTION)
@@ -98,7 +96,7 @@ def ratingsVprices(raw_data):
     for tup in sorted(set(raw_data), key=lambda x: x[0]):
         print("{} appears {} times.".format(tup, raw_data.count(tup)))
 
-    return ratings, prices
+    return ratings, prices, size
 
 def distanceDictionary(raw_data):
     dist_dict = {"nearby" : 0, "sorta": 0, "medium" : 0, "pretty_far":0, "far" : 0}
@@ -136,7 +134,7 @@ if __name__ == '__main__':
             cur.execute('SELECT Rating, Price FROM Yelp JOIN Google ON GoogleId = Google.Id WHERE Google.SearchString = ?', (user_input, ))
             results = cur.fetchall()
 
-            ratings, prices = ratingsVprices(results)
+            ratings, prices, size = ratingsVprices(results)
 
             trace0 = Scatter(
                 x= ratings,
@@ -194,7 +192,6 @@ if __name__ == '__main__':
             print("Try again!\n")
 
 
-#Your tests should show that you are able to access data from all of your sources
 class TestData(unittest.TestCase):
 
     def testGoogle(self):
@@ -211,7 +208,6 @@ class TestData(unittest.TestCase):
         self.assertTrue('name' in testData[0])
         self.assertTrue(len(testData) > 0)
 
-#that your database is correctly constructed and can satisfy queries that are necessary for your program,
 class TestDatabase(unittest.TestCase):
     def testGoogle(self):
         cur.execute("SELECT * FROM Google")
@@ -229,7 +225,6 @@ class TestDatabase(unittest.TestCase):
         self.assertTrue(type(results[0]) == tuple)
         self.assertTrue(len(results[0]) == 8)
 
-#  and that your data processing produces the results and data structures you need for presentation.
 class TestProcessing(unittest.TestCase):
     def testRatingsVprices(self):
         func = ratingsVprices([(4.0, "$$"), (3.5,"$$$"), (3.0, "$$"), (4.0, "$$")])
